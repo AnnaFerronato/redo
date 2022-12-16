@@ -1,4 +1,5 @@
 import psycopg2
+import json
 
 def connect_database():
     try:
@@ -48,5 +49,29 @@ def create_table():
 
     close_database(cur)
 
+def insert_data():
+  file = open('metadado.json', 'r')
+
+  try:
+    data = json.load(file)['INITIAL']
+    tuples = list( zip(data['A'], data['B']) )
+
+    conn = connect_database()
+    cur = conn.cursor()
+    
+    for tuple in tuples:
+      tuple = [str(column) for column in tuple]
+      values = ', '.join(tuple)
+      command = ("""INSERT INTO dados(a, b) VALUES ("""+ values +""")""")
+      cur.execute(command)
+    
+    cur.close()
+    conn.commit()
+
+  finally:
+    close_database(cur)
+    file.close()
+
 
 create_table()
+insert_data()
