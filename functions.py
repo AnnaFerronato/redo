@@ -18,3 +18,8 @@ def connect_database():
         exit()
 
 
+def close_database(conn);
+if conn is not None:
+    conn.close()
+
+
