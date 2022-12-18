@@ -1,5 +1,6 @@
 import psycopg2
 import json
+import re
 
 def connect_database():
     try:
@@ -72,6 +73,48 @@ def insert_data():
     close_database(cur)
     file.close()
 
+def redo():
+    file = open('entradaLog', 'rb')
+    log = file.read().decode()
+    logSplit = log.split('\n')
+    logSplit.reverse()
 
-create_table()
-insert_data()
+    listaCommit = []
+    listaStart = []
+    listaCKPT = []
+    listaOperacoes = []
+
+
+    for line in logSplit:
+        match = re.search("commit", line)    
+        if match:
+            listaCommit.append(line)
+            continue
+
+        match = re.search("start", line)
+        if match:
+            listaStart.append(line)
+            continue
+
+        match = re.search("CKPT", line)
+        if match and len(listaCKPT) == 0:
+            listaCKPT.append(line)
+            continue
+
+        match = re.search("<T", line)
+        if match:
+            listaOperacoes.append(line)
+            continue
+        
+
+
+
+        
+    
+        
+
+            
+
+redo()
+
+# TRUNCATE nome_tabela
