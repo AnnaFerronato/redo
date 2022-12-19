@@ -1,11 +1,6 @@
-#abre o arquivo
-file = open("entradaLog", "r")
+from functions import *
 
-#garante que está no começo do arquivo
-file.seek(0)
-#le as linhas e guarda em array
-array = file.readlines()
 
-#le as linhas do fim ao começo
-for i in reversed(array):
-    print(i)
+create_table()
+insert_data()
+read_log()

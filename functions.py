@@ -128,36 +128,31 @@ def read_log():
                     listaCKPT.append(transacao)
                     break
 
-                transacaoS = re.sub('[(+*) >]', '', transacao[1])
+                transacaoS = re.sub('[(+*)>]', '', transacao[1])
                 transacao = re.split(",", transacaoS)
 
                 for t in transacao:
                     listaCKPT.append(t)
                 continue
 
-
-    print(listaCKPT)
-    print(listaOperacoes)
-    print(listaCommit)
-    print(listaStart)
     redo(listaCKPT, listaOperacoes, listaCommit)
 
 def redo(CKPT, OP, COMMIT):
     redo = []
     listaOperacao = []
 
-    for t in CKPT:
-        for commmit in COMMIT:
-            match = re.search(t, commmit)
-            if match:
-                print(t + " realizou REDO")
-                redo.append(t)
+    for commmit in COMMIT:
+        commmit = re.sub('[<>]', '', commmit)
+        commmit = re.split(" ", commmit)
 
-            else:
-                print(t + " não realizou REDO")
+        print(commmit[1] + " realizou REDO")
+        redo.append(commmit[1])
+        CKPT.remove(commmit[1])
+                
+    for trn in CKPT:
+        print(trn + " não realizou REDO")
+
     
-    print(redo)
-
     for red in redo:
         for operacao in OP:
             match = re.search(red, operacao)
@@ -167,7 +162,7 @@ def redo(CKPT, OP, COMMIT):
     listaOperacao.reverse()
 
     for operacao in listaOperacao:
-        operacao = re.sub('[< >]', '', operacao)
+        operacao = re.sub('[<>]', '', operacao)
         operacao = re.split(",", operacao)
 
         idTupla = operacao[1]
@@ -196,7 +191,3 @@ def redo(CKPT, OP, COMMIT):
         finally:
             close_database(cur)
         
-
-create_table()
-insert_data()
-read_log()
