@@ -7,7 +7,7 @@ def connect_database():
         conn = psycopg2.connect(
             database = "log",
             user = "postgres",
-            password = "12345",
+            password = "4108357923",
             host = "localhost",
             port = "5432"
         )
@@ -187,8 +187,37 @@ def redo(CKPT, OP, COMMIT):
                 command = ("""UPDATE dados SET """+ coluna +""" = """ + valorNovo +""" where id = """ + idTupla)
                 cur.execute(command)
                 
+
+                print_initial(cur)
                 cur.close()
                 conn.commit()
 
         finally:
             close_database(cur)
+
+
+
+
+
+def print_initial(cur):
+  id = []
+  a = []
+  b = []
+
+  cur.execute('SELECT * FROM dados ORDER BY id')
+  tuples = cur.fetchall()
+
+  for tuple in tuples:
+    id.append(tuple[0])
+    a.append(tuple[1])
+    b.append(tuple[2])
+
+  print('''
+    {
+      "INITIAL": {
+        "id": '''+ str(id)[1:-1] +''',
+        "A: '''+ str(a)[1:-1] +''',
+        "B": '''+ str(b)[1:-1] +'''
+      }
+    }
+  ''')
