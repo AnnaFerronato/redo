@@ -9,6 +9,7 @@
 <start T4>
 <T4,1,A,2000,3000>
 <start T5>
+<start T6>
 <CKPT (T3,T4,T5)>
 <commit T4>
 <T5,2,A,20,1000>

@@ -192,8 +192,3 @@ def redo(CKPT, OP, COMMIT):
 
         finally:
             close_database(cur)
-        
-
-create_table()
-insert_data()
-read_log()
