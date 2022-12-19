@@ -73,7 +73,7 @@ def insert_data():
     close_database(cur)
     file.close()
 
-def redo():
+def read_log():
     file = open('entradaLog', 'rb')
     log = file.read().decode()
     logSplit = log.split('\n')
@@ -86,35 +86,68 @@ def redo():
 
 
     for line in logSplit:
-        match = re.search("commit", line)    
-        if match:
-            listaCommit.append(line)
-            continue
+        if len(listaCKPT) >= 1: # só precisamos pegar as transações em aberto
+            match = re.search("start", line)
+            if match:
+                for t in listaCKPT:
+                    match = re.search(t, line)
+                    if match:
+                        listaStart.append(line)
+                        continue
 
-        match = re.search("start", line)
-        if match:
-            listaStart.append(line)
-            continue
-
-        match = re.search("CKPT", line)
-        if match and len(listaCKPT) == 0:
-            listaCKPT.append(line)
-            continue
-
-        match = re.search("<T", line)
-        if match:
-            listaOperacoes.append(line)
-            continue
+            match = re.search("<T", line)
+            if match:
+                for t in listaCKPT:
+                    match = re.search(t, line)
+                    if match:
+                        listaOperacoes.append(line)
+                        continue
         
+        else:
+            match = re.search("commit", line)    
+            if match:
+                listaCommit.append(line)
+                continue
+
+            match = re.search("start", line)
+            if match:
+                listaStart.append(line)
+                continue
+
+            match = re.search("<T", line)
+            if match:
+                listaOperacoes.append(line)
+                continue
+
+            match = re.search("CKPT", line)
+            if match and len(listaCKPT) == 0:
+                transacao = re.split(" ", line)
+
+                if len(transacao) == 1: # se não tem nenhuma transação em aberto no checkpoint então só precisa refazer as que estão abaixo dele
+                    listaCKPT.append(transacao)
+                    break
+
+                transacaoS = re.sub('[(+*) && >]', '', transacao[1])
+                transacao = re.split(",", transacaoS)
+
+                for t in transacao:
+                    listaCKPT.append(t)
+                continue
 
 
+    print(listaCKPT)
+    print(listaOperacoes)
+    print(listaCommit)
+    print(listaStart)
+    redo(listaCKPT, listaOperacoes, listaCommit, listaStart)
 
-        
-    
-        
-
+def redo(CKPT, OP, COMMIT, ST):
+    for t in CKPT:
+        for commmit in COMMIT:
+            match = re.search(t, commmit)
+            if match:
+                print(t + " realizou REDO")
+            else:
+                print(t + " não realizou REDO")
             
-
-redo()
-
-# TRUNCATE nome_tabela
+read_log()
