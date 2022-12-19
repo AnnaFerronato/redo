@@ -63,7 +63,7 @@ def insert_data():
     for tuple in tuples:
       tuple = [str(column) for column in tuple]
       values = ', '.join(tuple)
-      command = ("""INSERT INTO dados(a, b) VALUES ("""+ values +""")""")
+      command = ("""INSERT INTO dados(A, B) VALUES ("""+ values +""")""")
       cur.execute(command)
     
     cur.close()
@@ -78,6 +78,7 @@ def read_log():
     log = file.read().decode()
     logSplit = log.split('\n')
     logSplit.reverse()
+    file.close()
 
     listaCommit = []
     listaStart = []
@@ -127,7 +128,7 @@ def read_log():
                     listaCKPT.append(transacao)
                     break
 
-                transacaoS = re.sub('[(+*) && >]', '', transacao[1])
+                transacaoS = re.sub('[(+*) >]', '', transacao[1])
                 transacao = re.split(",", transacaoS)
 
                 for t in transacao:
@@ -139,15 +140,63 @@ def read_log():
     print(listaOperacoes)
     print(listaCommit)
     print(listaStart)
-    redo(listaCKPT, listaOperacoes, listaCommit, listaStart)
+    redo(listaCKPT, listaOperacoes, listaCommit)
 
-def redo(CKPT, OP, COMMIT, ST):
+def redo(CKPT, OP, COMMIT):
+    redo = []
+    listaOperacao = []
+
     for t in CKPT:
         for commmit in COMMIT:
             match = re.search(t, commmit)
             if match:
                 print(t + " realizou REDO")
+                redo.append(t)
+
             else:
                 print(t + " não realizou REDO")
+    
+    print(redo)
+
+    for red in redo:
+        for operacao in OP:
+            match = re.search(red, operacao)
+            if match:
+                listaOperacao.append(operacao)
+    
+    listaOperacao.reverse()
+
+    for operacao in listaOperacao:
+        operacao = re.sub('[< >]', '', operacao)
+        operacao = re.split(",", operacao)
+
+        idTupla = operacao[1]
+        coluna = operacao[2]
+        valorNovo = operacao[4]
+
+        try:
+            conn = connect_database()
+            cur = conn.cursor()
+
+            command = ("""SELECT """ + coluna + """ FROM dados WHERE id = """ + idTupla)
+
             
+            cur.execute(command)
+            tuple = cur.fetchone()[0]
+
+            if tuple == valorNovo: 
+                break
+            else:    
+                command = ("""UPDATE dados SET """+ coluna +""" = """ + valorNovo +""" where id = """ + idTupla)
+                cur.execute(command)
+                
+                cur.close()
+                conn.commit()
+
+        finally:
+            close_database(cur)
+        
+
+create_table()
+insert_data()
 read_log()
