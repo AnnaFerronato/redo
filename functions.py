@@ -125,7 +125,6 @@ def read_log():
                 transacao = re.split(" ", line)
 
                 if len(transacao) == 1: # se não tem nenhuma transação em aberto no checkpoint então só precisa refazer as que estão abaixo dele
-                    listaCKPT.append(transacao)
                     break
 
                 transacaoS = re.sub('[(+*)>]', '', transacao[1])
@@ -147,11 +146,14 @@ def redo(CKPT, OP, COMMIT):
 
         print(commmit[1] + " realizou REDO")
         redo.append(commmit[1])
-        CKPT.remove(commmit[1])
-                
-    for trn in CKPT:
-        print(trn + " não realizou REDO")
 
+        if len(CKPT) >= 1:
+            CKPT.remove(commmit[1])
+
+    if len(CKPT) >= 1:     
+        for trn in CKPT:
+            print(trn + " não realizou REDO")
+    
     
     for red in redo:
         for operacao in OP:
@@ -191,3 +193,7 @@ def redo(CKPT, OP, COMMIT):
         finally:
             close_database(cur)
         
+
+create_table()
+insert_data()
+read_log()
